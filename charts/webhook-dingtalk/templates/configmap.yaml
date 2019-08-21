@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "webhook-dingtalk.fullname" . }}
+  labels:
+{{ include "webhook-dingtalk.labels" . | indent 4 }}
+data:
+  dingtalk-webhook-template.yaml: |-
+    {{ .Files.Get .Values.template | nindent 4 }}

@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "scrape-targets.fullname" . }}
+  labels:
+{{ include "scrape-targets.labels" . | indent 4 }}
+spec:
+  {{- with .Values.selector }}
+  selector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.namespaceSelector }}
+  namespaceSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  {{- with .Values.targetLabels }}
+  targetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.podTargetLabels }}
+  podTargetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.sampleLimit }}
+  sampleLimit: {{ . }}
+  {{- end }}
+  {{- with .Values.endpoints }}
+  endpoints:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

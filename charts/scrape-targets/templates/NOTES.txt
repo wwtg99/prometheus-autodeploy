@@ -1,0 +1,3 @@
+Add scrape targets {{ include "scrape-targets.fullname" . }} for prometheus.
+It will be added to prometheus automatically.
+Please check "/targets" in your prometheus domain.

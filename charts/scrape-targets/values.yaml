@@ -1,0 +1,16 @@
+nameOverride: ""
+fullnameOverride: ""
+
+# reference: 
+# https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitorspec
+
+# required
+selector: {}
+endpoints: []
+
+# optional
+namespaceSelector: {}
+jobLabel: ""
+targetLabels: []
+podTargetLabels: []
+sampleLimit: null

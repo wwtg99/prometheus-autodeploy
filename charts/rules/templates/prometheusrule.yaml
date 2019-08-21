@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "rules.fullname" . }}
+  labels:
+{{ include "rules.labels" . | indent 4 }}
+spec:
+  groups:
+  {{- $fullname := (include "rules.fullname" .) -}}
+  {{- range .Values.groups }}
+  - name: {{ .name | default (printf "%s.rules" $fullname) }}
+    {{- with .interval }}
+    interval: {{ . }}
+    {{- end }}
+    {{- with .rules }}
+    rules:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  {{- end }}

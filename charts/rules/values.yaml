@@ -1,0 +1,10 @@
+
+nameOverride: ""
+fullnameOverride: ""
+
+# reference 
+# https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#rulegroup
+groups:
+  - name: ""
+    interval: ""
+    rules: []

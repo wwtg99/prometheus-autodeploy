@@ -1,0 +1,31 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: monitor-ebs
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4
+volumeBindingMode: WaitForFirstConsumer
+# restrict region and az
+# allowedTopologies:
+# - matchLabelExpressions:
+#   - key: failure-domain.beta.kubernetes.io/zone
+#     values:
+#     - us-east-1d
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-pvc
+  namespace: monitoring
+  labels:
+    app: influxdb
+    release: influxdb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: monitor-ebs
+  resources:
+    requests:
+      storage: 200Gi

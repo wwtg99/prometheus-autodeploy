@@ -1,0 +1,31 @@
+replicaCount: 1
+
+# restrict resource
+# resources:
+#   requests:
+#     cpu: 300m
+#     memory: 300M
+#   limits:
+#     cpu: 300m
+#     memory: 1G
+
+es:
+  uri: "http://localhost:9200"
+  all: true
+
+# add scrape target in prometheus
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  labels:
+    app: elasticsearch-exporter
+    release: prometheus
+
+# add alert rule in prometheus
+prometheusRule:
+  enabled: true
+  namespace: monitoring
+  labels:
+    app: prometheus-operator
+    release: prometheus
+  rules: []

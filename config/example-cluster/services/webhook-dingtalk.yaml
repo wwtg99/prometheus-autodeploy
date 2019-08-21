@@ -1,0 +1,2 @@
+extraArgs:
+  - --ding.profile=monitoring=https://oapi.dingtalk.com/robot/send?access_token=xxxx

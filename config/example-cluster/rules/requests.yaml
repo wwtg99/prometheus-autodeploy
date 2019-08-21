@@ -1,0 +1,9 @@
+groups:
+  - rules:
+    - alert: RequestStatusCode500
+      expr: http_request_total{statuscode="500"} > 5
+      for: "5m"
+      labels:
+        severity: critical
+      annotations:
+        summary: http status code 500 is high for `{{$labels.service}}`

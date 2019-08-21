@@ -1,0 +1,238 @@
+# prometheusOperator:
+  # createCustomResource: false
+  # restrict node
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: failure-domain.beta.kubernetes.io/region
+  #           operator: In
+  #           values:
+  #           - us-east-1
+  #         - key: failure-domain.beta.kubernetes.io/zone
+  #           operator: In
+  #           values:
+  #           - us-east-1d
+
+# restirct resources
+# resources:
+#   requests:
+#     cpu: 300m
+#     memory: 300M
+#   limits:
+#     cpu: 300m
+#     memory: 1G
+
+prometheus:
+  prometheusSpec:
+    # remote storage
+    remoteWrite:
+    - url: "http://influxdb:8086/api/v1/prom/write?db=prometheus"
+    remoteRead:
+    - url: "http://influxdb:8086/api/v1/prom/read?db=prometheus"
+    # restrict node
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #       - matchExpressions:
+    #         - key: failure-domain.beta.kubernetes.io/region
+    #           operator: In
+    #           values:
+    #           - us-east-1
+    #         - key: failure-domain.beta.kubernetes.io/zone
+    #           operator: In
+    #           values:
+    #           - us-east-1d
+    # restrict resources
+    # resources:
+    #   requests:
+    #     cpu: 300m
+    #     memory: 300M
+    #   limits:
+    #     cpu: 300m
+    #     memory: 1G
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: traefik  # ingress class
+    hosts:
+    - "prometheus.mydomain.io"  # domain for prometheus GUI
+
+alertmanager:
+  config:
+    # alertmanager config
+    global:
+      # The smarthost and SMTP sender used for mail notifications.
+      # smtp_smarthost: ''
+      # smtp_from: ''
+      # smtp_auth_username: ''
+      # smtp_auth_password: ''
+      # Global opsgenie config
+      opsgenie_api_key: ""
+    # The root route on which each incoming alert enters.
+    route:
+      # The root route must not have any matchers as it is the entry point for
+      # all alerts. It needs to have a receiver configured so alerts that do not
+      # match any of the sub-routes are sent to someone.
+      receiver: 'team-monitoring-warning'
+      # The labels by which incoming alerts are grouped together. For example,
+      # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+      # be batched into a single group.
+      group_by: ['alertname', 'team']
+      # When a new group of alerts is created by an incoming alert, wait at
+      # least 'group_wait' to send the initial notification.
+      # This way ensures that you get multiple alerts for the same group that start
+      # firing shortly after another are batched together on the first
+      # notification.
+      group_wait: 30s
+      # When the first notification was sent, wait 'group_interval' to send a batch
+      # of new alerts that started firing for that group.
+      group_interval: 3m
+      # If an alert has successfully been sent, wait 'repeat_interval' to
+      # resend them.
+      repeat_interval: 8h
+      # All the above attributes are inherited by all child routes and can
+      # overwritten on each.
+      # The child route trees.
+      routes:
+      # This routes performs a regular expression match on alert labels to
+      # catch alerts that are related to a list of services.
+      - match:
+          severity: critical
+        receiver: team-monitoring-disaster
+        group_by: ['alertname']
+      - match:
+          severity: warning
+        receiver: team-monitoring-warning
+        group_by: ['alertname']
+      - match:
+          severity: test
+        receiver: team-monitoring-test
+        group_by: ['alertname']
+    # Inhibition rules allow to mute a set of alerts given that another alert is
+    # firing.
+    # We use this to mute any warning-level notifications if the same alert is
+    # already critical.
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      # Apply inhibition if the alertname is the same.
+      equal: ['alertname']
+    # receivers config
+    receivers:
+    - name: 'monitoring-test'
+      # send email
+      email_configs:
+      - to: ''
+    - name: 'monitoring-critical'
+      webhook_configs:
+      # send to dingtalk webhook
+      - send_resolved: true
+        url: http://prometheus-webhook-dingtalk/dingtalk/monitoring/send
+    - name: 'monitoring-warning'
+      webhook_configs:
+      # send to dingtalk webhook
+      - send_resolved: true
+        url: http://prometheus-webhook-dingtalk/dingtalk/monitoring/send
+  alertmanagerSpec:
+    # storage config
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          storageClassName: monitor-ebs
+          resources:
+            requests:
+              storage: 20Gi
+
+    # restrict node
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #       - matchExpressions:
+    #         - key: failure-domain.beta.kubernetes.io/region
+    #           operator: In
+    #           values:
+    #           - us-east-1
+    #         - key: failure-domain.beta.kubernetes.io/zone
+    #           operator: In
+    #           values:
+    #           - us-east-1d
+
+    # restrict resources
+    # resources:
+    #   requests:
+    #     cpu: 300m
+    #     memory: 300M
+    #   limits:
+    #     cpu: 300m
+    #     memory: 1G
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: traefik  # ingress class
+    hosts:
+    - "alert.mydomain.io"  # domain for alert manager
+
+grafana:
+  replicas: 1
+  # adminPassword: ""
+  env:
+    # GF_SERVER_DOMAIN: ""
+    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/"
+    # GF_DATABASE_URL: "mysql://user:secret@host:port/database"
+
+  # restrict node
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: failure-domain.beta.kubernetes.io/region
+  #           operator: In
+  #           values:
+  #           - us-east-1
+  #         - key: failure-domain.beta.kubernetes.io/zone
+  #           operator: In
+  #           values:
+  #           - us-east-1d
+
+  # restrict resources
+  # resources:
+  #   requests:
+  #     cpu: 300m
+  #     memory: 300M
+  #   limits:
+  #     cpu: 300m
+  #     memory: 1G
+
+  # configure sidecar to auto load data sources and dashboards at startup
+  # sidecar:
+  #   dashboards:
+  #     enabled: true
+  #     searchNamespace: monitoring
+  #   datasources:
+  #     enabled: true
+  #     searchNamespace: monitoring
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: traefik  # ingress class
+    hosts:
+    - "grafana.mydomain.io"  # domain for grafana
+
+# exporters
+kubeControllerManager:
+  enabled: true
+kubeEtcd:
+  enabled: true
+kubeScheduler:
+  enabled: true

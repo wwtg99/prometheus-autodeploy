@@ -1,0 +1,10 @@
+selector:
+    matchLabels:
+      app: influxdb
+      release: influxdb
+namespaceSelector:
+    matchNames:
+      - monitoring
+endpoints:
+  - port: api
+    interval: 15s

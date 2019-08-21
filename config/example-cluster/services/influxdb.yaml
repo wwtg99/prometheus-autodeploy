@@ -1,0 +1,60 @@
+# persistence storage config
+persistence:
+  enabled: true
+  useExisting: false
+  name: "influxdb-pvc"  # use the PVC created by init
+  accessMode: "ReadWriteOnce"
+  size: 200Gi
+
+# restrict resources
+# resources:
+#   requests:
+#     cpu: 300m
+#     memory: 300M
+#   limits:
+#     cpu: 300m
+#     memory: 1G
+
+# restrict node for the same AZ for PVC
+# affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: failure-domain.beta.kubernetes.io/region
+#           operator: In
+#           values:
+#           - us-east-1
+#         - key: failure-domain.beta.kubernetes.io/zone
+#           operator: In
+#           values:
+#           - us-east-1d
+
+# default user
+setDefaultUser:
+  enabled: false
+  user:
+    username: "admin"
+    password: "admin"
+
+# default database
+env:
+  - name: INFLUXDB_DB
+    value: "prometheus"
+
+# influxdb config
+config:
+  data:
+    # disable memory limit for series and values
+    max_series_per_database: 0
+    max_values_per_tag: 0
+  http:
+    enabled: true
+    # auth_enabled: true
+initScripts:
+  enabled: true
+  scripts:
+    # add default retention policy
+    # data retention for 180 days
+    retention.iql: |+
+      CREATE RETENTION POLICY "default_retention_policy" on "prometheus" DURATION 180d REPLICATION 1 DEFAULT
