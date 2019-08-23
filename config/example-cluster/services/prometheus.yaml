@@ -76,11 +76,11 @@ alertmanager:
       # The root route must not have any matchers as it is the entry point for
       # all alerts. It needs to have a receiver configured so alerts that do not
       # match any of the sub-routes are sent to someone.
-      receiver: 'team-monitoring-warning'
+      receiver: 'monitoring-warning'
       # The labels by which incoming alerts are grouped together. For example,
       # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
       # be batched into a single group.
-      group_by: ['alertname', 'team']
+      group_by: ['alertname']
       # When a new group of alerts is created by an incoming alert, wait at
       # least 'group_wait' to send the initial notification.
       # This way ensures that you get multiple alerts for the same group that start
@@ -101,15 +101,15 @@ alertmanager:
       # catch alerts that are related to a list of services.
       - match:
           severity: critical
-        receiver: team-monitoring-disaster
+        receiver: monitoring-critical
         group_by: ['alertname']
       - match:
           severity: warning
-        receiver: team-monitoring-warning
+        receiver: monitoring-warning
         group_by: ['alertname']
       - match:
           severity: test
-        receiver: team-monitoring-test
+        receiver: monitoring-test
         group_by: ['alertname']
     # Inhibition rules allow to mute a set of alerts given that another alert is
     # firing.
