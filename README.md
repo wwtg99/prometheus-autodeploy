@@ -5,6 +5,8 @@ Prometheus Deploy
 
 This project is used to deploy prometheus monitoring related services.
 
+Full introduction please refer to [this blog](https://zhuanlan.zhihu.com/p/79561704). 详细介绍请参考[这篇文章](https://zhuanlan.zhihu.com/p/79561704)。
+
 # Structure
 
 ```
